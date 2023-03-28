@@ -15,4 +15,5 @@ March 28 2023
     If you can calculate this LBM with bounce back scheme, switch a name directory of src_baunce_20230328 to src
     Initial condition is in ./data/lbm.data
     Output data are in ./img
+    
 <img width="476" alt="image" src="https://user-images.githubusercontent.com/116667889/228243975-9bdc9a1b-8b14-4c70-b39d-f5860cf077aa.png">
