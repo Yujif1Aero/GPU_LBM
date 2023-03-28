@@ -1,5 +1,5 @@
 # GPU_LBM
-This is LBM programs of which the development and research are progress.
+This is LBM programs of which the development and research are in progress.
 
 March 28 2023
 --Launching this github
