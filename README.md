@@ -1,6 +1,10 @@
 # GPU_LBM
 This is LBM programs of which the development and research are in progress.
-
+MAIN TARGETs are 
+    -GPU calclation
+    -high fidelity numerical methods
+    -aeroacoustics
+    
 March 28 2023
 --Launching this github
     Lid-driven cavity problem benchmark with half-way bounce back scheme and bounce back scheme boundary condition.
