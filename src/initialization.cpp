@@ -3,12 +3,14 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <unistd.h>
+//#include <unistd.h>
 using namespace std;
 
 #include "initialization.hpp"
 #include "lbm_model.hpp"
 #include "utils.hpp"
+
+#define WORKAROUND 1
 
 /**
  * Prints help message that includes program usage instructions and control
@@ -39,9 +41,11 @@ void ReadParameters(int* xlength, float* tau, float& VelInt,
         PrintHelpMessage();
 
     /* checking parameters */
+#if !defined(WORKAROUND)
     if (access(argv[1], R_OK) != 0)
         ERROR("Provided configuration file path either doesn't exist or can "
               "not be read.");
+#endif
     *gpu_enabled = 0;
 
     /* reading parameters */
