@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 
 #include "utils.hpp"
 
