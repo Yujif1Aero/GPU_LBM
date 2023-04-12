@@ -15,6 +15,7 @@ using namespace std;
 #include "streaming.hpp"
 #include "utils.hpp"
 #include "visualization.hpp"
+#include "stopwatch.h"
 
 int main(int argc, char* argv[]) {
     float *collide_field = NULL, *stream_field = NULL, *swap = NULL, tau, wall_velocity[D_LBM], num_cells, mlups_sum;
@@ -49,17 +50,19 @@ int main(int argc, char* argv[]) {
     // TreatBoundary(collide_field, wall_velocity, xstart, ystart,
     //               zstart, xend, yend, zend, xstep, ystep, zstep);
 
-    WriteFluidVtkOutput(collide_field, "./Initial/initfluidfiled", t, xstart, ystart,
+    WriteFluidVtkOutput(collide_field, "../Initial/initfluidfiled", t, xstart, ystart,
                         zstart, xend, yend, zend, xstep, ystep, zstep);
     //WriteAllVtkOutput(collide_field, "./Initial/initallfiled", t, xstep, ystep, zstep);
 
-    WriteField(collide_field, "./Initial/field", t, xstart, ystart, zstart, xend, yend, zend, xstep, ystep, zstep,
+    WriteField(collide_field, "../Initial/field", t, xstart, ystart, zstart, xend, yend, zend, xstep, ystep, zstep,
                gpu_enabled);
-    WritePhysics(collide_field, "Initial/physics-filed", t, xstart, ystart,
+    WritePhysics(collide_field, "../Initial/physics-filed", t, xstart, ystart,
                  zstart, xend, yend, zend, xstep, ystep, zstep, gpu_enabled);
+    mlups_sum = 0.f;
     for (t = 0; t <= timesteps; t++) {
-        printf("Time step: #%d\n", t);
-        mlups_time = clock();
+        printf("Time step: #%d\r", t);
+        Stopwatch sw;
+        sw.start();
         /* Compute post collision distributions */
         DoCollision(collide_field, tau, xstep, ystep, zstep, xstart, ystart, zstart, xend, yend, zend);
         /* Copy pdfs from neighbouring cells into collide field */
@@ -70,24 +73,25 @@ int main(int argc, char* argv[]) {
         stream_field = swap;
         /* Treat boundaries */
         TreatBoundary(collide_field, wall_velocity, xstart, ystart, zstart, xend, yend, zend, xstep, ystep, zstep);
-        mlups_time = clock() - mlups_time;
+        sw.stop();
+        mlups_time = sw.getMs();
         /* Print out the MLUPS value */
-        mlups_sum += num_cells / (MLUPS_EXPONENT * (float)mlups_time / CLOCKS_PER_SEC);
+        mlups_sum += num_cells / (MLUPS_EXPONENT * (float)mlups_time);
         //if (VERBOSE)
-            printf("MLUPS: %f\n", num_cells / (MLUPS_EXPONENT * (float)mlups_time / CLOCKS_PER_SEC));
+//            printf("MLUPS: %f\n", num_cells / (MLUPS_EXPONENT * (float)mlups_time));
         /* Print out vtk output if needed */
         if (!(t % timesteps_per_plotting)) {
-            WriteFluidVtkOutput(collide_field, "img/all-fielda", t, xstart, ystart, zstart, xend, yend, zend, xstep, ystep, zstep);
-            WriteFluidVtkOutput(collide_field, "img/fluid-field", t, xstart + 1, ystart + 1, zstart, xend - 1, yend - 1, zend, xstep, ystep, zstep);
+            WriteFluidVtkOutput(collide_field, "../img/all-fielda", t, xstart, ystart, zstart, xend, yend, zend, xstep, ystep, zstep);
+            WriteFluidVtkOutput(collide_field, "../img/fluid-field", t, xstart + 1, ystart + 1, zstart, xend - 1, yend - 1, zend, xstep, ystep, zstep);
         }
     }
 
     printf("Average MLUPS: %f\n", mlups_sum / (t + 1));
 
     if (VERBOSE) {
-        WriteField(collide_field, "Final/disfunc-field", t, xstart, ystart, zstart, xend, yend, zend, xstep, ystep, zstep,
+        WriteField(collide_field, "../Final/disfunc-field", t, xstart, ystart, zstart, xend, yend, zend, xstep, ystep, zstep,
                    gpu_enabled);
-        WritePhysics(collide_field, "Final/physics-filed", t, xstart, ystart, zstart, xend, yend, zend, xstep, ystep, zstep, gpu_enabled);
+        WritePhysics(collide_field, "../Final/physics-filed", t, xstart, ystart, zstart, xend, yend, zend, xstep, ystep, zstep, gpu_enabled);
 
     }
 

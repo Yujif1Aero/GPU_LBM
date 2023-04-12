@@ -18,3 +18,12 @@ March 28 2023
     Output data are in ./img
     
 <img width="476" alt="image" src="https://user-images.githubusercontent.com/116667889/228243975-9bdc9a1b-8b14-4c70-b39d-f5860cf077aa.png">
+
+## Execution 
+
+On windows, execute directly from VS or
+
+```
+cd build
+./bin/x64/XX/LbmApp64.exe ../data/lbm.dat -cpu
+```
