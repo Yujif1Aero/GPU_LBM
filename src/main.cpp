@@ -41,7 +41,6 @@ int main(int argc, char* argv[]) {
     float RhoInt, VelInt[D_LBM], PresInt, Feq[Q_LBM];
 
     clock_t mlups_time;
-<<<<<<< HEAD
 	size_t field_size;
     
 	/* process parameters */
