@@ -1,0 +1,8 @@
+.vs/
+build/
+*.vtk
+*.sln
+.vscode/
+Initial/
+img/
+bin/

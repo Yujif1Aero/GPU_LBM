@@ -36,7 +36,7 @@ void TreatBoundary(float* collide_field, float* wall_velocity, int xstart, int y
         }
         for (y = ystart; y <= yend; y++) {
             // non-slip boundary right  wall
-            // nx = xstep -1; //dummy wall
+            // nx = xend -1; //dummy wall
             nx = xend; // fluid
             i = inv(imxy);
             /* Assign the boudary cell value */
@@ -64,8 +64,8 @@ void TreatBoundary(float* collide_field, float* wall_velocity, int xstart, int y
             }
             // halfway bounce back scheme
             // moving-slip boundary top wall
-            // ny = ystep -1; // dummy wall
-            ny = yend; // wall
+            // ny = yend -1; // dummy wall
+            ny = yend; // fluid
             for (i = 6; i < Q_LBM; i++) {
                 dot_prod = LATTICE_VELOCITIES[i][0] * wall_velocity[0] + LATTICE_VELOCITIES[i][1] * wall_velocity[1] + LATTICE_VELOCITIES[i][2] * wall_velocity[2];
                 /* Compute density in the neighbour cell */
