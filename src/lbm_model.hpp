@@ -30,7 +30,7 @@
 /* reference values, not used in actual computation */
 #define C_S_INV 1.73205080756887729
 static const float C_S = 1.0/C_S_INV;
-static const float C_S2 = 1.0 /3.0;
+static const float C_S_POW2 = 1.0 /C_S_POW2_INV;
 /* predefined simulation parameters */
 
 /* set constant value reference discretized velocity and time*/

@@ -51,14 +51,15 @@ int main(int argc, char* argv[]) {
 	
 	/* check if provided parameters are legitimate */
 	//ValidateModel(bc_velocity, LengthRef, tau, VelInt, RhoInt); //for cavity
+	printf("valida \n");
 	ValidateModel(bc_velocity, LengthRef, tau, RhoInt); 
 
 	/* 	 grid generation */
 	// InitialiseGrid(xlength, xmax, ymax, zmax, xstart, ystart, zstart, xend, yend, zend); // for cavity
-	InitialiseGrid(xmax, ymax, zmax , xstart, ystart, zstart, xend, yend, zend, xd, yd, zd);
+    printf("Grid \n");
+    InitialiseGrid(xmax, ymax, zmax, xstart, ystart, zstart, xend, yend, zend, xd, yd, zd);
 
-
-	/* initializing fields */
+    /* initializing fields */
 	// num_cells = pow(xlength + 2, D_LBM);
 	num_cells = xmax * ymax * zmax;
 	field_size = Q_LBM * num_cells * sizeof(float);

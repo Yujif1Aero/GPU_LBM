@@ -109,7 +109,7 @@ void ReadParameters(float* LengthRef, float* tau, float* nu, float* VelInt, floa
     // READ_FLOAT(argv[1], *RhoInt);
     // READ_FLOAT(argv[1], *PresInt);
     *RhoInt = 1.0;
-    *PresInt = C_S2 * *RhoInt;
+    *PresInt = C_S_POW2 * *RhoInt;
     READ_FLOAT(argv[1], *VelIntx);
     READ_FLOAT(argv[1], *VelInty);
     READ_FLOAT(argv[1], *VelIntz);
@@ -117,16 +117,16 @@ void ReadParameters(float* LengthRef, float* tau, float* nu, float* VelInt, floa
     READ_FLOAT(argv[1], *velocity_bcy);
     READ_FLOAT(argv[1], *velocity_bcz);
     // READ_FLOAT(argv[1], *pressure_bc);
-    *pressure_bc = C_S2 * *RhoInt;
+    *pressure_bc = C_S_POW2 * *RhoInt;
 
     READ_FLOAT(argv[1], *LengthRef);
     READ_INT(argv[1], *timesteps);
     READ_INT(argv[1], *timesteps_per_plotting);
-    abs_vel_bc = sqrt((velocity_bc[0]) * (velocity_bc[0]) +
-                      (velocity_bc[1]) * (velocity_bc[1]) +
-                      (velocity_bc[2]) * (velocity_bc[2]));
+    abs_vel_bc = sqrt(*velocity_bcx * *velocity_bcx +
+                      *velocity_bcy * *velocity_bcy +
+                      *velocity_bcz * *velocity_bcz);
     *nu = abs_vel_bc * (*LengthRef) / re;
-    *tau = C_S2 * *nu + 1.0 / 2.0;
+    *tau = C_S_POW2_INV * *nu + 0.5;
 }
 
 // void InitialiseFields(float* collide_field, float* stream_field, int xmax, int ymax, int zmax, int gpu_enabled, float Feq[Q_LBM], float RhoInt, float wall_velocity[D_LBM]) {
@@ -226,25 +226,36 @@ void InitialiseGrid(int xlength, int& xmax, int& ymax, int& zmax, int& xstart, i
 #endif // D2Q9
 }
 
-void InitialiseGrid(int& jmax, int& kmax, int& lmax, int& xstart, int& ystart, int& zstart, int& xend, int& yend, int& zend, vector<double>& xd, vector<double>& yd, vector<double>& zd) {
+void InitialiseGrid(int &xmax, int &ymax, int &zmax, int& xstart, int& ystart, int& zstart, int& xend, int& yend, int& zend, vector<double>& xd, vector<double>& yd, vector<double>& zd) {
 #ifdef D2Q9
     ifstream mesh("./mesh/grid.dat");
     string line;
 
     int idomein = 0;
     int i = 0, index = 0;
+    //int jmax = 0, kmax = 0, lmax = 0;
 
     while (getline(mesh, line)) {
         if (i == 0) {
-            printf("skip the TITLE line");
+            printf("skip the TITLE line \n");
+            cout << line.substr() << endl;
         } else if (i == 1) {
-            printf("skip the VARIABLE line");
+            printf("skip the VARIABLE line \n");
+            cout << line.substr() << endl;
         } else if (line.substr(0, 4) == "ZONE") {
             /* read the grid dimensions from the ZONE line */
-            sscanf(line.c_str(), "ZONE T = \"%*s\", I = %d, J = %d,K= %d,F = \"%*s\"", &jmax, &kmax, &lmax);
+            
+            sscanf(line.c_str(), "ZONE T = \"%*[^\"]\", I=%d, J=%d, K=%d, F=%*s", &xmax, &ymax, &zmax);
+            cout << line.substr() << endl;
+            xstart = 0; 
+            ystart = 0;
+            zstart = 0;
+            xend = xmax - 1;
+            yend = ymax - 1;
+            zend = zmax;
 
-            idomein = jmax * kmax * lmax;
-            printf("jmax, kmax, lmax, jmax*kmax*lmax are %d, %d, %d, %d", jmax, kmax, lmax, idomein);
+            idomein = xmax * ymax * zmax;
+            printf("jmax, kmax, lmax, jmax*kmax*lmax are %d, %d, %d, %d\n", xmax, ymax, zmax, idomein);
             /* resize the arrays to the correct size */
             xd.resize(idomein);
             yd.resize(idomein);
