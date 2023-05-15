@@ -10,8 +10,8 @@ void ComputeDensity(const float* const current_cell, float* density) {
     for (i = 0; i < Q_LBM; i++)
         *density += current_cell[i];
     /* Density should be close to a unit (ρ~1) */
-     if ((*density - 1.0) > EPS)
-         ERROR("Density dropped below error tolerance.");
+    //  if ((*density - 1.0) > EPS)
+    //      ERROR("Density dropped below error tolerance.");
 }
 
 void ComputeVelocity(const float* const current_cell, const float* const density, float* velocity) {

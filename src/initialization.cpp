@@ -71,7 +71,7 @@ void ReadParameters(int* xlength, float* tau, float& VelInt, float* velocity_wal
     *tau = C_S_POW2_INV * nu / (C * C * DT) + 1.0 / 2.0;
 }
 
-void ReadParameters(float* LengthRef, float* tau, float* nu, float* VelInt, float* RhoInt, float* PresInt, float* velocity_bc, float* pressure_bc, int* timesteps, int* timesteps_per_plotting, int argc, char* argv[], int* gpu_enabled) {
+void ReadParameters(float* LengthRef, float* tau, float* nu, float* VelInt, float* RhoInt, float* PresInt, float* velocity_bc, float* pressure_bc, int* timesteps, int* timesteps_per_plotting, char* filegrid, int argc, char* argv[], int* gpu_enabled) {
     /* NOTE ALL VARIABLES are NON-DIMENTIONAL
     L = L* / dx*, t = t* /dt*, rho = rho* /rho0*, Re = u*L* / nu* = uL/nu
     * means dimensional */
@@ -127,6 +127,8 @@ void ReadParameters(float* LengthRef, float* tau, float* nu, float* VelInt, floa
                       *velocity_bcz * *velocity_bcz);
     *nu = abs_vel_bc * (*LengthRef) / re;
     *tau = C_S_POW2_INV * *nu + 0.5;
+
+    READ_STRING(argv[1], filegrid);
 }
 
 // void InitialiseFields(float* collide_field, float* stream_field, int xmax, int ymax, int zmax, int gpu_enabled, float Feq[Q_LBM], float RhoInt, float wall_velocity[D_LBM]) {
@@ -160,41 +162,66 @@ void ReadParameters(float* LengthRef, float* tau, float* nu, float* VelInt, floa
 //                     if (Feq[i] < 0)
 //                         ERROR("Probability distribution function can not "
 //                               "be negative.");
-//                     stream_field[Q_LBM * (x + y * ymax + z * zmax * zmax) + i] = Feq[i];
-//                     collide_field[Q_LBM * (x + y * ymax + z * zmax * zmax) + i] = Feq[i];
+//                     stream_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + i] = Feq[i];
+//                     collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + i] = Feq[i];
 //                 }
 //             }
 //         }
 //     }
 // }
 
-void InitialiseFields(float* collide_field, float* stream_field, int xmax, int ymax, int zmax, int gpu_enabled, float Feq[Q_LBM], float RhoInt, float* VelInt) {
+void InitialiseFields(float* collide_field, float* stream_field, int xmax, int ymax, int zmax, int gpu_enabled, float Feq[Q_LBM], float RhoInt, float* VelInt, vector<int>& bcd) {
     /* open boundary */
-    float dot_prod_cu, dot_prod_cu2, dot_prod_uu;
+    float dot_prod_cu, dot_prod_cu2, dot_prod_uu, intvel = 0.0;
     for (int z = 0; z < zmax; z++) {
         for (int y = 0; y < ymax; y++) {
             for (int x = 0; x < xmax; x++) {
-                for (int i = 0; i < Q_LBM; i++) {
+                if (bcd[x + y * xmax + z * xmax * ymax] == FLUID) {
 
-                    /* Initializing condition */
-                    dot_prod_cu = LATTICE_VELOCITIES[i][0] * VelInt[0] +
-                                  LATTICE_VELOCITIES[i][1] * VelInt[1] +
-                                  LATTICE_VELOCITIES[i][2] * VelInt[2];
-                    dot_prod_cu2 = dot_prod_cu * dot_prod_cu;
-                    dot_prod_uu = VelInt[0] * VelInt[0] + VelInt[1] * VelInt[2] * VelInt[2];
+                    for (int i = 0; i < Q_LBM; i++) {
 
-                    Feq[i] = LATTICE_WEIGHTS[i] * (RhoInt) *
-                             (1.0 + dot_prod_cu * C_S_POW2_INV +
-                              dot_prod_cu2 * C_S_POW4_INV / 2.0 -
-                              dot_prod_uu * C_S_POW2_INV / 2.0);
+                        /* Initializing condition */
+                        dot_prod_cu = LATTICE_VELOCITIES[i][0] * VelInt[0] +
+                                      LATTICE_VELOCITIES[i][1] * VelInt[1] +
+                                      LATTICE_VELOCITIES[i][2] * VelInt[2];
+                        dot_prod_cu2 = dot_prod_cu * dot_prod_cu;
+                        dot_prod_uu = VelInt[0] * VelInt[0] + VelInt[1] * VelInt[1] + VelInt[2] * VelInt[2];
 
-                    /* Probability distribution function can not be less
-                     * than 0 */
-                    if (Feq[i] < 0)
-                        ERROR("Probability distribution function can not "
-                              "be negative.");
-                    stream_field[Q_LBM * (x + y * ymax + z * zmax * zmax) + i] = Feq[i];
-                    collide_field[Q_LBM * (x + y * ymax + z * zmax * zmax) + i] = Feq[i];
+                        Feq[i] = LATTICE_WEIGHTS[i] * (RhoInt) *
+                                 (1.0 + dot_prod_cu * C_S_POW2_INV / pow(C, 2.0) +
+                                  dot_prod_cu2 * C_S_POW4_INV / (2.0 * pow(C, 4.0)) -
+                                  dot_prod_uu * C_S_POW2_INV / (2.0 * pow(C, 2.0)));
+
+                        /* Probability distribution function can not be less
+                         * than 0 */
+                        if (Feq[i] < 0)
+                            ERROR("Probability distribution function can not "
+                                  "be negative.");
+                        stream_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + i] = Feq[i];
+                        collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + i] = Feq[i];
+                    }
+                } else {
+                    for (int i = 0; i < Q_LBM; i++) {
+
+                        /* Initializing condition */
+                        dot_prod_cu = LATTICE_VELOCITIES[i][0] * intvel +
+                                      LATTICE_VELOCITIES[i][1] * intvel +
+                                      LATTICE_VELOCITIES[i][2] * intvel;
+                        dot_prod_cu2 = dot_prod_cu * dot_prod_cu;
+                        dot_prod_uu = intvel * intvel + intvel * intvel + intvel * intvel;
+                        Feq[i] = LATTICE_WEIGHTS[i] * (RhoInt) *
+                                 (1.0 + dot_prod_cu * C_S_POW2_INV +
+                                  dot_prod_cu2 * C_S_POW4_INV / (2.0 * pow(C, 4.0)) -
+                                  dot_prod_uu * C_S_POW2_INV / (2.0 * pow(C, 2.0)));
+
+                        /* Probability distribution function can not be less
+                         * than 0 */
+                        if (Feq[i] < 0)
+                            ERROR("Probability distribution function can not "
+                                  "be negative.");
+                        stream_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + i] = Feq[i];
+                        collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + i] = Feq[i];
+                    }
                 }
             }
         }
@@ -226,14 +253,17 @@ void InitialiseGrid(int xlength, int& xmax, int& ymax, int& zmax, int& xstart, i
 #endif // D2Q9
 }
 
-void InitialiseGrid(int &xmax, int &ymax, int &zmax, int& xstart, int& ystart, int& zstart, int& xend, int& yend, int& zend, vector<double>& xd, vector<double>& yd, vector<double>& zd) {
+void InitialiseGrid(char* dirmesh, int& xmax, int& ymax, int& zmax, int& xstart, int& ystart, int& zstart, int& xend, int& yend, int& zend, vector<double>& xd, vector<double>& yd, vector<double>& zd, vector<int>& bcd) {
 #ifdef D2Q9
-    ifstream mesh("./mesh/grid.dat");
+    ifstream mesh;
     string line;
-
+    mesh.open(dirmesh, ios::in);
+    if (!mesh.is_open()) {
+        cerr << "Failed to open the file!" << endl;
+    }
     int idomein = 0;
     int i = 0, index = 0;
-    //int jmax = 0, kmax = 0, lmax = 0;
+    // int jmax = 0, kmax = 0, lmax = 0;
 
     while (getline(mesh, line)) {
         if (i == 0) {
@@ -244,32 +274,36 @@ void InitialiseGrid(int &xmax, int &ymax, int &zmax, int& xstart, int& ystart, i
             cout << line.substr() << endl;
         } else if (line.substr(0, 4) == "ZONE") {
             /* read the grid dimensions from the ZONE line */
-            
+
             sscanf(line.c_str(), "ZONE T = \"%*[^\"]\", I=%d, J=%d, K=%d, F=%*s", &xmax, &ymax, &zmax);
             cout << line.substr() << endl;
-            xstart = 0; 
-            ystart = 0;
+            xstart = 1;
+            ystart = 1;
             zstart = 0;
-            xend = xmax - 1;
-            yend = ymax - 1;
-            zend = zmax;
-
+            xend = xmax - 2;
+            yend = ymax - 2;
+            zend = 0;
+            printf("xstart, ystart, zstart, xend, yend, zend are %d, %d, %d, %d, %d, %d\n", xstart, ystart, zstart, xend, yend, zend);
             idomein = xmax * ymax * zmax;
-            printf("jmax, kmax, lmax, jmax*kmax*lmax are %d, %d, %d, %d\n", xmax, ymax, zmax, idomein);
+            printf("xmax, ymax, zmax, xmax*ymax*zmax are %d, %d, %d, %d\n", xmax, ymax, zmax, idomein);
             /* resize the arrays to the correct size */
             xd.resize(idomein);
             yd.resize(idomein);
             zd.resize(idomein);
+            bcd.resize(idomein);
 
         } else {
             /* read the x, y, z values from the line*/
             double xi = 0.0, yi = 0.0, zi = 0.0;
-            sscanf(line.c_str(), "%lf, %lf, %lf", &xi, &yi, &zi);
+            int bcdi = 0;
+            sscanf(line.c_str(), "%lf  %lf  %lf  %d", &xi, &yi, &zi, &bcdi);
             /* store the vb*/
             index = i - 3;
             xd[index] = xi;
             yd[index] = yi;
             zd[index] = zi;
+            bcd[index] = bcdi;
+            // printf("xi, yi, zi and bcdi are %lf, %lf, %lf, %d\n", xi, yi, zi, bcdi);
         }
         i++;
     }

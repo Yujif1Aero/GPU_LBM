@@ -23,6 +23,8 @@
 #define MOVING_WALL 2
 #define INLET 3
 #define OUTLET 4
+#define PERIODIC 5
+#define DUMMY -1
 /* computation enhancing values */
 #define EPS 0.05
 #define C_S_POW2_INV 3.0
@@ -36,14 +38,14 @@ static const float C_S_POW2 = 1.0 /C_S_POW2_INV;
 /* set constant value reference discretized velocity and time*/
 /* These variables are non-dimensional
     C = C* / dx0 / dt0,  DT = dt* /dt0* */
-static const int C = 1;
-static const int DT = 1;
+static const float C = 1.0;
+static const float DT = 1.0;
 
 /* set boundary velocity direction at moving wall */
 #define VEL_BOUNDARY_DIR 5
 
 #ifdef D3Q19
-static const int LATTICE_VELOCITIES[19][3] = {
+static const float LATTICE_VELOCITIES[19][3] = {
     {0,-C,-C},{-C,0,-C},{0,0,-C},{C,0,-C},{0,C,-C},{-C,-C,0},{0,-C,0},{C,-C,0},
     {-C,0,0}, {0,0,0},  {C,0,0}, {-C,C,0},{0,C,0}, {C,C,0},  {0,-C,C},{-C,0,C},
     {0,0,C},  {C,0,C},  {0,C,C}
@@ -56,7 +58,14 @@ static const float LATTICE_WEIGHTS[19] = {
 #endif //D3Q19
 
 #ifdef D2Q9
-static const int LATTICE_VELOCITIES[9][3] = {
+/* direction of LATTICE_VELOCITY C */
+/*
+    7 6 8
+      |
+    3 4 5
+      |
+    0 2 1*/
+static const float LATTICE_VELOCITIES[9][3] = {
     {-C,-C,0},{C,-C,0},{0,-C,0},{-C,0,0},{0,0,0},{C,0,0},{0,C,0},{-C,C,0},{C,C,0}
 };
 static const float LATTICE_WEIGHTS[9] = {

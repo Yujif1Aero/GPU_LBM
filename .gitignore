@@ -4,7 +4,11 @@ build/
 *.sln
 .vscode/
 Initial/
-img/
+img*
 bin/
 Makefile
 __*
+mesh_dev/
+Final/
+Initial/
+data_dev/
