@@ -2,3 +2,13 @@
 build/
 *.vtk
 *.sln
+.vscode/
+Initial/
+img*
+bin/
+Makefile
+__*
+mesh_dev/
+Final/
+Initial/
+data_dev/

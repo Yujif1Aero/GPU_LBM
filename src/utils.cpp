@@ -126,7 +126,7 @@ char* find_string( const char* szFileName, const char *szVarName )
 }
 
 
-void read_string( const char* szFileName, const char* szVarName, char*   pVariable)
+void read_string( const char* szFileName, const char* szVarName, char* pVariable)
 {
     char* szValue = NULL;       /* string containg the read variable value */
 

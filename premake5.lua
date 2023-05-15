@@ -57,6 +57,10 @@ solution "Lbm"
 		buildoptions{"-msse3", "-mssse3" }
 		buildoptions{"-std=c++17"}
 	end
+	if os.istarget("macosx") then
+	   defines{ "_osx" }
+	   buildToolset = "clang"
+	end
 	
 	platforms {"x64"}
 	cppdialect "C++17"
@@ -71,7 +75,9 @@ solution "Lbm"
 --	includedirs { tahoeRoot, tahoeRoot.."contrib/include/" }
 	
 	project "lbmApp"
-		kind "ConsoleApp"
+	        kind "ConsoleApp"
+		os.mkdir("./Initial")
+		os.mkdir("./img")
 		location "./build"
 		includedirs { "./" }
 		if os.istarget("windows") then
@@ -79,11 +85,30 @@ solution "Lbm"
 		end
 		if os.istarget("linux") then
 		end
+		if os.istarget("macosx") then
+		end
 
 		files { "./src/**.h", "./src/**.cpp" } 
 
 		filter {"x64", "Debug"}
 			targetdir "./dist/debug"
 		filter {"x64", "Release"}
-			targetdir "./dist/release"
+		        targetdir "./dist/release"
+		
+		
+
+
+-- Clean Function --
+newaction {
+   trigger     = "clean",
+   description = "clean the software",
+   execute     = function ()
+      print("clean the build and dist...")
+      os.rmdir("./dist")
+      os.rmdir("./build")
+      print("clean Makefile...")
+      os.remove("./Makefile")
+      print("done.")
+   end
+}
 

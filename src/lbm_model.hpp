@@ -21,24 +21,31 @@
 #define FLUID 0
 #define NO_SLIP 1
 #define MOVING_WALL 2
+#define INLET 3
+#define OUTLET 4
+#define PERIODIC 5
+#define DUMMY -1
 /* computation enhancing values */
 #define EPS 0.05
 #define C_S_POW2_INV 3.0
 #define C_S_POW4_INV 9.0
 /* reference values, not used in actual computation */
-#define SQRT3 1.73205080756887729
-static const float C_S = 1.0/SQRT3;
+#define C_S_INV 1.73205080756887729
+static const float C_S = 1.0/C_S_INV;
+static const float C_S_POW2 = 1.0 /C_S_POW2_INV;
 /* predefined simulation parameters */
 
 /* set constant value reference discretized velocity and time*/
-static const int C = 1;
-static const int DT = 1;
+/* These variables are non-dimensional
+    C = C* / dx0 / dt0,  DT = dt* /dt0* */
+static const float C = 1.0;
+static const float DT = 1.0;
 
 /* set boundary velocity direction at moving wall */
 #define VEL_BOUNDARY_DIR 5
 
 #ifdef D3Q19
-static const int LATTICE_VELOCITIES[19][3] = {
+static const float LATTICE_VELOCITIES[19][3] = {
     {0,-C,-C},{-C,0,-C},{0,0,-C},{C,0,-C},{0,C,-C},{-C,-C,0},{0,-C,0},{C,-C,0},
     {-C,0,0}, {0,0,0},  {C,0,0}, {-C,C,0},{0,C,0}, {C,C,0},  {0,-C,C},{-C,0,C},
     {0,0,C},  {C,0,C},  {0,C,C}
@@ -51,7 +58,14 @@ static const float LATTICE_WEIGHTS[19] = {
 #endif //D3Q19
 
 #ifdef D2Q9
-static const int LATTICE_VELOCITIES[9][3] = {
+/* direction of LATTICE_VELOCITY C */
+/*
+    7 6 8
+      |
+    3 4 5
+      |
+    0 2 1*/
+static const float LATTICE_VELOCITIES[9][3] = {
     {-C,-C,0},{C,-C,0},{0,-C,0},{-C,0,0},{0,0,0},{C,0,0},{0,C,0},{-C,C,0},{C,C,0}
 };
 static const float LATTICE_WEIGHTS[9] = {
@@ -95,6 +109,11 @@ static const float LATTICE_WEIGHTS[9] = {
 /**
  * Validates the configured physical model by calculating characteristic numbers
  */
-void ValidateModel(float wall_velocity[D_LBM], int domain_size, float tau, float Vel, float Rho);
+/* only cavity */
+void ValidateModel(float wall_velocity[D_LBM], int domain_size, float tau, float Vel, float Rho); 
+
+/* open b */
+void ValidateModel(float bc_velocity[D_LBM], float LengthRef, float tau, float RhoInt); 
+
 
 #endif
