@@ -78,6 +78,7 @@ solution "Lbm"
 	        kind "ConsoleApp"
 		os.mkdir("./Initial")
 		os.mkdir("./img")
+		os.mkdir("./Final")
 		location "./build"
 		includedirs { "./" }
 		if os.istarget("windows") then
