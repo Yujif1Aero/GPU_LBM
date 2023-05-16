@@ -109,10 +109,7 @@ static const float LATTICE_WEIGHTS[9] = {
 /**
  * Validates the configured physical model by calculating characteristic numbers
  */
-/* only cavity */
-void ValidateModel(float wall_velocity[D_LBM], int domain_size, float tau, float Vel, float Rho); 
 
-/* open b */
 void ValidateModel(float bc_velocity[D_LBM], float LengthRef, float tau, float RhoInt); 
 
 

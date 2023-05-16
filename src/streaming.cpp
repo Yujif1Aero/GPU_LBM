@@ -12,9 +12,6 @@ void DoStreaming(float* collide_field, float* stream_field, const int xmax, cons
             for (x = xstart; x <= xend; x++) {
                 if (bcd[x + y * xmax + z * xmax * ymax] == FLUID) {
                     for (i = 0; i < Q_LBM; i++) {
-                        // nx = x -  LATTICE_VELOCITIES[i][0];
-                        // ny = y -  LATTICE_VELOCITIES[i][1];
-                        // nz = z -  LATTICE_VELOCITIES[i][2];
 
                         nx = x + LATTICE_VELOCITIES[i][0];
                         ny = y + LATTICE_VELOCITIES[i][1];

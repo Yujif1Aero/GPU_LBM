@@ -29,14 +29,13 @@ void ComputeVelocity(const float* const current_cell, const float* const density
     velocity[0] /= *density;
     velocity[1] /= *density;
     velocity[2] /= *density;
-    // cout << velocity[0] << endl;
-    // cout << velocity[1] << endl;
-    // cout << velocity[2] << endl;
+
 }
 
 void ComputeFeq(const float* const density, const float* const velocity, float* feq) {
     int i;
-    float dot_prod_cu, dot_prod_cu2, dot_prod_uu; /* summands */
+    float dot_prod_cu, dot_prod_cu2, dot_prod_uu;
+    /* summands */
     /* NOTE:Indexes are hard coded to improve program performance */
     for (i = 0; i < Q_LBM; i++) {
         dot_prod_cu = (float)LATTICE_VELOCITIES[i][0] * velocity[0] + (float)LATTICE_VELOCITIES[i][1] * velocity[1] +
@@ -45,7 +44,7 @@ void ComputeFeq(const float* const density, const float* const velocity, float* 
         dot_prod_uu = velocity[0] * velocity[0] + velocity[1] * velocity[1] + velocity[2] * velocity[2];
 
         feq[i] = LATTICE_WEIGHTS[i] * (*density) * (1.0 + dot_prod_cu * C_S_POW2_INV + dot_prod_cu2 * C_S_POW4_INV / 2.0 - dot_prod_uu * C_S_POW2_INV / 2.0);
-        // cout << feq[i] <<endl;
+
         /* Probability distribution function can not be less than 0 */
         if (feq[i] < 0)
             ERROR("1Probability distribution function can not be negative.");

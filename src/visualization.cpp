@@ -28,21 +28,9 @@ void write_vtkHeader(FILE* fp, int xrange, int yrange, int zrange) {
     fprintf(fp, "\n");
 }
 
-void write_vtkPointCoordinates(FILE* fp, int xstart, int ystart, int zstart, int xend, int yend, int zend, int xrange, int yrange, int zrange) {
-    /* only cavity */
-    float originX = 0.0, originY = 0.0, originZ = 0.0;
-    int x = 0, y = 0, z = 0;
-
-    for (z = zstart; z <= zend; z++)
-        for (y = ystart; y <= yend; y++)
-            for (x = xstart; x <= xend; x++)
-                fprintf(fp, "%f %f %f\n", originX + (x * 1.0 / xrange),
-                        originY + (y * 1.0 / yrange),
-                        originZ + (z * 1.0 / zrange));
-}
 
 void write_vtkPointCoordinates(FILE* fp, int idomein, vector<double>& xd, vector<double>& yd, vector<double>& zd, vector<int>& bcd) {
-    /* open boundary */
+
 
     for (int i = 0; i <= idomein - 1; i++) {
         if (bcd[i] == FLUID)
@@ -51,85 +39,15 @@ void write_vtkPointCoordinates(FILE* fp, int idomein, vector<double>& xd, vector
 }
 
 void write_vtkPointCoordinates(FILE* fp, int idomein, vector<double>& xd, vector<double>& yd, vector<double>& zd) {
-    /* open boundary */
+
 
     for (int i = 0; i < idomein; i++) {
         fprintf(fp, "%f %f %f\n", xd[i], yd[i], zd[i]);
     }
 }
 
-void write_vtkPointCoordinates(FILE* fp, int xmax, int ymax, int zmax) {
-    float originX = 0.0, originY = 0.0, originZ = 0.0;
-    int x = 0, y = 0, z = 0;
-
-    for (z = 0; z < zmax; z++)
-        for (y = 0; y < ymax; y++)
-            for (x = 0; x < xmax; x++)
-                fprintf(fp, "%f %f %f\n", originX + (x * 1.0 / xmax),
-                        originY + (y * 1.0 / ymax),
-                        originZ + (z * 1.0 / zmax));
-}
-
-void WriteAllVtkOutput(const float* const collideField, const char* filename, unsigned int t, int xmax, int ymax, int zmax) {
-    // only cavity
-    int x, y, z;
-
-    float velocity[3], density;
-
-    char szFileName[80];
-    FILE* fp = NULL;
-    sprintf(szFileName, "%s_%i.vtk", filename, t);
-    fp = fopen(szFileName, "w");
-    if (fp == NULL) {
-        char szBuff[80];
-        sprintf(szBuff, "Failed to open %s", szFileName);
-        ERROR(szBuff);
-        return;
-    }
-
-    write_vtkHeader(fp, xmax, ymax, zmax);
-    write_vtkPointCoordinates(fp, xmax, ymax, zmax);
-
-    fprintf(fp, "POINT_DATA %i \n", xmax * ymax * zmax);
-    fprintf(fp, "\n");
-    fprintf(fp, "VECTORS velocity float\n");
-    for (z = 0; z < zmax; z++) {
-        for (y = 0; y < ymax; y++) {
-            for (x = 0; x < xmax; x++) {
-                ComputeDensity(
-                    &collideField[Q_LBM * (x + y * xmax + z * xmax * ymax)],
-                    &density);
-                ComputeVelocity(
-                    &collideField[Q_LBM * (x + y * xmax + z * xmax * ymax)],
-                    &density, velocity);
-                fprintf(fp, "%f %f %f\n", velocity[0], velocity[1],
-                        velocity[2]);
-            }
-        }
-    }
-
-    fprintf(fp, "\n");
-    fprintf(fp, "SCALARS density float 1 \n");
-    fprintf(fp, "LOOKUP_TABLE default \n");
-    for (z = 0; z < zmax; z++) {
-        for (y = 0; y < ymax; y++) {
-            for (x = 0; x < xmax; x++) {
-                ComputeDensity(
-                    &collideField[Q_LBM * (z * zmax * zmax + y * ymax + x)],
-                    &density);
-                fprintf(fp, "%f\n", density);
-            }
-        }
-    }
-    if (fclose(fp)) {
-        char szBuff[80];
-        sprintf(szBuff, "Failed to close %s", szFileName);
-        ERROR(szBuff);
-    }
-}
 
 void WriteAllVtkOutput(const float* const collideField, const char* filename, unsigned int t, int xmax, int ymax, int zmax, vector<double>& xd, vector<double>& yd, vector<double>& zd) {
-    // open boundary
     int x, y, z;
     int idomein = xmax * ymax * zmax;
     float velocity[3], density, pressure;
@@ -201,91 +119,10 @@ void WriteAllVtkOutput(const float* const collideField, const char* filename, un
     }
 }
 
-void WriteFluidVtkOutput(const float* const collideField, const char* filename, unsigned int t, const int xstart, const int ystart, const int zstart, const int xend, const int yend, const int zend, const int xmax, const int ymax, const int zmax) {
-    /* only cavity*/
-    int x, y, z;
-    // int len = xlength +2; /* lexicographic order "[ Q * ( z*len*len + y*len +
-    // x) + i ]" */
 
-    int xrange = xend - xstart + 1;
-    int yrange = yend - ystart + 1;
-    int zrange = zend - zstart + 1;
-
-    float velocity[3], density, pressure;
-
-    char szFileName[80];
-    FILE* fp = NULL;
-    sprintf(szFileName, "%s_%i.vtk", filename, t);
-    fp = fopen(szFileName, "w");
-    if (fp == NULL) {
-        char szBuff[80];
-        sprintf(szBuff, "Failed to open %s", szFileName);
-        ERROR(szBuff);
-        return;
-    }
-
-    write_vtkHeader(fp, xrange, yrange, zrange);
-    write_vtkPointCoordinates(fp, xstart, ystart, zstart, xend, yend, zend, xrange, yrange, zrange);
-
-    fprintf(fp, "POINT_DATA %i \n", xrange * yrange * zrange);
-    fprintf(fp, "\n");
-    fprintf(fp, "VECTORS velocity float\n");
-    for (z = zstart; z <= zend; z++) {
-        for (y = ystart; y <= yend; y++) {
-            for (x = xstart; x <= xend; x++) {
-                ComputeDensity(
-                    &collideField[Q_LBM * (x + y * xmax + z * xmax * ymax)],
-                    &density);
-                // cout << "(x, y ,z, *density) =" <<  x <<"," <<  y  << "," << z << "," << density << endl;
-                ComputeVelocity(
-                    &collideField[Q_LBM * (x + y * xmax + z * xmax * ymax)],
-                    &density, velocity);
-                fprintf(fp, "%f %f %f\n", velocity[0], velocity[1],
-                        velocity[2]);
-            }
-        }
-    }
-
-    fprintf(fp, "\n");
-    fprintf(fp, "SCALARS density float 1 \n");
-    fprintf(fp, "LOOKUP_TABLE default \n");
-    for (z = zstart; z <= zend; z++) {
-        for (y = ystart; y <= yend; y++) {
-            for (x = xstart; x <= xend; x++) {
-                ComputeDensity(
-                    &collideField[Q_LBM * (x + y * xmax + z * xmax * ymax)],
-                    &density);
-                fprintf(fp, "%f\n", density);
-            }
-        }
-    }
-
-    fprintf(fp, "\n");
-    fprintf(fp, "SCALARS pressure float 1 \n");
-    fprintf(fp, "LOOKUP_TABLE default \n");
-    for (z = zstart; z <= zend; z++) {
-        for (y = ystart; y <= yend; y++) {
-            for (x = xstart; x <= xend; x++) {
-                ComputeDensity(
-                    &collideField[Q_LBM * (x + y * xmax + z * xmax * ymax)],
-                    &density);
-                pressure = density * C_S_POW2;
-                fprintf(fp, "%f\n", pressure);
-            }
-        }
-    }
-    if (fclose(fp)) {
-        char szBuff[80];
-        sprintf(szBuff, "Failed to close %s", szFileName);
-        ERROR(szBuff);
-    }
-}
 
 void WriteFluidVtkOutput(const float* const collideField, const char* filename, unsigned int t, const int xstart, const int ystart, const int zstart, const int xend, const int yend, const int zend, const int xmax, const int ymax, const int zmax, vector<double>& xd, vector<double>& yd, vector<double>& zd, vector<int>& bcd) {
-    /* only open boundary*/
     int x, y, z;
-    // int len = xlength +2; /* lexicographic order "[ Q * ( z*len*len + y*len +
-    // x) + i ]" */
     
     int xrange = xend - xstart + 1;
     int yrange = yend - ystart + 1;
@@ -307,7 +144,6 @@ void WriteFluidVtkOutput(const float* const collideField, const char* filename, 
     }
 
     write_vtkHeader(fp, xrange, yrange, zrange);
-    // write_vtkPointCoordinates(fp, xstart, ystart, zstart, xend, yend, zend, xrange, yrange, zrange);
     write_vtkPointCoordinates(fp, idomein, xd, yd, zd, bcd);
 
     fprintf(fp, "POINT_DATA %i \n", xrange * yrange * zrange);
@@ -319,7 +155,6 @@ void WriteFluidVtkOutput(const float* const collideField, const char* filename, 
                 ComputeDensity(
                     &collideField[Q_LBM * (x + y * xmax + z * xmax * ymax)],
                     &density);
-                // cout << "(x, y ,z, *density) =" <<  x <<"," <<  y  << "," << z << "," << density << endl;
                 ComputeVelocity(
                     &collideField[Q_LBM * (x + y * xmax + z * xmax * ymax)],
                     &density, velocity);

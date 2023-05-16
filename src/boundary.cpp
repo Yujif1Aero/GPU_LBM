@@ -6,92 +6,12 @@ using namespace std;
 #include "cell_computation.hpp"
 #include "lbm_model.hpp"
 
-#define SWICH_OUTLETBC
+//#define SWICH_OUTLETBC
 /**
  * Finds an inverse probability distribution for the provided lattice index.
  */
 int inv(int i) {
     return (Q_LBM - 1) - i;
-}
-
-void TreatBoundary(float* collide_field, float* wall_velocity, int xstart, int ystart, int zstart, int xend, int yend, int zend, int xmax, int ymax, int zmax) {
-    int x, nx, y, ny, z, nz, i;
-    // int invC = int(1 / C);
-    float dot_prod, density;
-    int imxy = 7, imx0 = 3, imxmy = 0;
-
-    // halfway bounce back scheme
-    for (z = zstart; z <= zend; z++) {
-        for (y = ystart; y <= yend; y++) {
-            // non-slip boundary left wall
-            // nx = 0; //dummy wall
-            nx = xstart; // fluid
-            i = imxy;
-            /* Assign the boudary cell value */
-            collide_field[Q_LBM * (nx + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * ((nx - 1) + (y + 1) * xmax + z * xmax * ymax) + i];
-
-            i = imx0;
-            /* Assign the boudary cell value */
-            collide_field[Q_LBM * (nx + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * ((nx - 1) + y * xmax + z * xmax * ymax) + i];
-
-            i = imxmy;
-            /* Assign the boudary cell value */
-            collide_field[Q_LBM * (nx + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * ((nx - 1) + (y - 1) * xmax + z * xmax * ymax) + i];
-        }
-        for (y = ystart; y <= yend; y++) {
-            // non-slip boundary right  wall
-            // nx = xmax -1; //dummy wall
-            nx = xend; // fluid
-            i = inv(imxy);
-            /* Assign the boudary cell value */
-            collide_field[Q_LBM * (nx + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * ((nx + 1) + (y - 1) * xmax + z * xmax * ymax) + i];
-
-            i = inv(imx0);
-            /* Assign the boudary cell value */
-            collide_field[Q_LBM * (nx + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * ((nx + 1) + y * xmax + z * xmax * ymax) + i];
-
-            i = inv(imxmy);
-            /* Assign the boudary cell value */
-            collide_field[Q_LBM * (nx + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * ((nx + 1) + (y + 1) * xmax + z * xmax * ymax) + i];
-        }
-    }
-
-    for (z = zstart; z <= zend; z++) {
-        for (x = xstart; x <= xend; x++) {
-            // halfway bounce back scheme
-            // no-slip boundary bottom wall
-            // ny = 0; // dummy wall
-            ny = ystart; // fluid
-            for (i = 0; i < 3; i++) {
-
-                if (i == 0)
-                    collide_field[Q_LBM * (x + ny * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * ((x - 1) + (ny - 1) * xmax + z * xmax * ymax) + i];
-                if (i == 1)
-                    collide_field[Q_LBM * (x + ny * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * ((x + 1) + (ny - 1) * xmax + z * xmax * ymax) + i];
-                if (i == 2)
-                    collide_field[Q_LBM * (x + ny * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * (x + (ny - 1) * xmax + z * xmax * ymax) + i];
-            }
-            // halfway bounce back scheme
-            // moving-slip boundary top wall
-            // ny = yend +1 ; // dummy wall
-            ny = yend; // fluid
-            for (i = 6; i < Q_LBM; i++) {
-                dot_prod = LATTICE_VELOCITIES[i][0] * wall_velocity[0] + LATTICE_VELOCITIES[i][1] * wall_velocity[1] + LATTICE_VELOCITIES[i][2] * wall_velocity[2];
-                /* Compute density in the neighbour cell */
-                ComputeDensity(&collide_field[Q_LBM * (x + ny * xmax + z * xmax * ymax)], &density);
-                /* Assign the boudary cell value */
-                if (i == 6)
-                    collide_field[Q_LBM * (x + ny * xmax + z * xmax * ymax) + inv(i)] =
-                        collide_field[Q_LBM * (x + (ny + 1) * xmax + z * xmax * ymax) + i] - 6.0 * density * LATTICE_WEIGHTS[i] * dot_prod;
-                if (i == 7)
-                    collide_field[Q_LBM * (x + ny * xmax + z * xmax * ymax) + inv(i)] =
-                        collide_field[Q_LBM * ((x - 1) + (ny + 1) * xmax + z * xmax * ymax) + i] - 6.0 * density * LATTICE_WEIGHTS[i] * dot_prod;
-                if (i == 8)
-                    collide_field[Q_LBM * (x + ny * xmax + z * xmax * ymax) + inv(i)] =
-                        collide_field[Q_LBM * ((x + 1) + (ny + 1) * xmax + z * xmax * ymax) + i] - 6.0 * density * LATTICE_WEIGHTS[i] * dot_prod;
-            }
-        }
-    }
 }
 
 void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int ystart, int zstart, int xend, int yend, int zend, int xmax, int ymax, int zmax, vector<int>& bcd, float RhoInt) {
@@ -140,7 +60,7 @@ void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int yst
                         nx = xmax - 2;
 
                         for (int i = 0; i < Q_LBM; i++) {
-// cout << "outlet" << bcd[nx + ny * xmax + nz * xmax * ymax] << endl;
+
 #ifdef SWICH_OUTLETBC
                             /* Springer LBM at PP200*/
                             ComputeDensity(&collide_field[Q_LBM * (nx + y * xmax + z * xmax * ymax)], &density);
@@ -170,7 +90,7 @@ void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int yst
                         ny = ymax - 2;
 
                         for (int i = 0; i < Q_LBM; i++) {
-// cout << "outlet" << bcd[nx + ny * xmax + nz * xmax * ymax] << endl;
+
 #ifdef SWICH_OUTLETBC
                             /* Springer LBM at PP200*/
                             ComputeDensity(&collide_field[Q_LBM * (x + ny * xmax + z * xmax * ymax)], &density);
@@ -203,12 +123,10 @@ void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int yst
                 if (bcd[x + y * xmax + z * xmax * ymax] == PERIODIC) {
                     for (int i = 0; i < Q_LBM; i++) {
                         if (y == ymax - 1) {
-                            // cout << "periodic " << ny <<"x, y, z ="<< nx << " " << ny << " " << nz << endl;
                             nyperimin = 2;
                             collide_field[Q_LBM * (x + (y - 1) * xmax + z * xmax * ymax) + i] = collide_field[Q_LBM * (x + nyperimin * xmax + z * xmax * ymax) + i];
 
                         } else if (y == 0) {
-                            // cout << "periodic " << ny <<"x, y, z ="<< nx << " " << ny << " " << nz << endl;
                             nyperimax = ymax - 3;
                             collide_field[Q_LBM * (x + (y + 1) * xmax + z * xmax * ymax) + i] = collide_field[Q_LBM * (x + nyperimax * xmax + z * xmax * ymax) + i];
                         }

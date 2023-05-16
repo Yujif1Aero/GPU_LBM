@@ -7,7 +7,7 @@ Initial/
 img*
 bin/
 Makefile
-__*
+_*
 mesh_dev/
 Final/
 Initial/

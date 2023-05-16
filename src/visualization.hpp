@@ -2,12 +2,7 @@
 #define _VISUALIZATION_H_
 
 
-void WriteAllVtkOutput(const float* const collide_field, const char* filename, unsigned int t, const int xmax, const int ymax, const int zmax);
 
-/* only cavity*/
-void WriteFluidVtkOutput(const float* const collide_field, const char* filename, unsigned int t, const int xstart, const int ystart, const int zstart, const int xend, const int yend, const int zend, const int xmax, const int ymax, const int zmax);
-
-/* open boundary*/
 void WriteFluidVtkOutput(const float* const collide_field, const char* filename, unsigned int t, const int xstart, const int ystart, const int zstart, const int xend, const int yend, const int zend, const int xmax, const int ymax, const int zmax, vector<double>& xd, vector<double>& yd, vector<double>& zd, vector<int>& bcd);
 
 void WriteAllVtkOutput(const float* const collide_field, const char* filename, unsigned int t,  const int xmax, const int ymax, const int zmax, vector<double>& xd, vector<double>& yd, vector<double>& zd);
