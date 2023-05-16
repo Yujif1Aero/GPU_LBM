@@ -27,13 +27,14 @@ void DoCollision(float* collide_field, float tau, const int xmax, const int ymax
     for (z = zstart; z <= zend; z++) {
         for (y = ystart; y <= yend; y++) {
             for (x = xstart; x <= xend; x++) {
-                bcd[x + y * xmax + z * xmax * ymax] == FLUID;
+               if( bcd[x + y * xmax + z * xmax * ymax] == FLUID) {
                 currentCell = &collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax)];
 
                 ComputeDensity(currentCell, &density);
                 ComputeVelocity(currentCell, &density, velocity);
                 ComputeFeq(&density, velocity, feq);
                 ComputePostCollisionDistributions(currentCell, tau, feq);
+               }
             }
         }
     }

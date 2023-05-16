@@ -17,7 +17,7 @@ using namespace std;
 #include "streaming.hpp"
 #include "utils.hpp"
 #include "visualization.hpp"
-#define BCINITIAL_CHK
+//#define BCINITIAL_CHK
 
 int main(int argc, char* argv[]) {
     float *collide_field = NULL, *stream_field = NULL, *swap = NULL, tau, nu, mlups_sum;
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
         /* Print out vtk output if needed */
         if (!(t % timesteps_per_plotting)) {
             WriteAllVtkOutput(collide_field, "../img/all-fielda", t, xmax, ymax, zmax, xd, yd, zd);
-            WriteFluidVtkOutput(collide_field, "../img/fluid-field", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, xd, yd, zd, bcd);
+           // WriteFluidVtkOutput(collide_field, "../img/fluid-field", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, xd, yd, zd, bcd);
         }
     }
     // #endif
