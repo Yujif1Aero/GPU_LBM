@@ -18,6 +18,7 @@ May 15 2023
 <img width="641" alt="image" src="https://github.com/Yujif1Aero/GPU_LBM/assets/116667889/87f840ad-1208-4d91-9055-b6979a6690d4">
 
 
+
 <img width="1531" alt="image" src="https://github.com/Yujif1Aero/GPU_LBM/assets/116667889/50adf8b4-8aac-49ba-8ceb-8dd938552d0d">
 
 
