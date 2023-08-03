@@ -17,7 +17,7 @@ using namespace std;
 #include "streaming.hpp"
 #include "utils.hpp"
 #include "visualization.hpp"
-//#define BCINITIAL_CHK
+#define BCINITIAL_CHK
 
 int main(int argc, char* argv[]) {
     float *collide_field = NULL, *stream_field = NULL, *swap = NULL, tau, nu, mlups_sum;
@@ -55,23 +55,29 @@ int main(int argc, char* argv[]) {
     InitialiseGrid(meshdir, xmax, ymax, zmax, xstart, ystart, zstart, xend, yend, zend, xd, yd, zd, bcd);
 
     /* initializing fields */
+    printf("Array initialisation \n");
     num_cells = xmax * ymax * zmax;
     field_size = Q_LBM * num_cells * sizeof(float);
     collide_field = (float*)malloc(field_size);
     stream_field = (float*)malloc(field_size);
 
+    printf("Initialisation \n");
     InitialiseFields(collide_field, stream_field, xmax, ymax, zmax, gpu_enabled, Feq, RhoInt, VelInt, bcd);
     //WriteFluidVtkOutput(collide_field, "../Initial/initfluidfiled", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, xd, yd, zd, bcd);
-    WriteAllVtkOutput(collide_field, "../Initial/initallfiled", t, xmax, ymax, zmax, xd, yd, zd);
-    WritePhysics(collide_field, "../Initial/physics-filed", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, gpu_enabled);
-    writebcd(bcd, "../Initial/init", xmax, ymax, zmax, gpu_enabled);
+    WriteAllVtkOutput(collide_field, "./Initial/initallfiled", t, xmax, ymax, zmax, xd, yd, zd);
+    WritePhysics(collide_field, "./Initial/physics-filed", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, gpu_enabled);
+    writebcd(bcd, "./Initial/init", xmax, ymax, zmax, gpu_enabled);
 
 #ifdef BCINITIAL_CHK
     /* Treat boundaries */
+    printf("CHK Boundary condition \n");
     TreatBoundary(collide_field, bc_velocity, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, bcd, RhoInt);
-    //WriteFluidVtkOutput(collide_field, "../Initial/initfluidfiled_bc", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, xd, yd, zd, bcd);
-    WriteAllVtkOutput(collide_field, "../Initial/initallfiled_bc", t, xmax, ymax, zmax, xd, yd, zd);
-    WritePhysics(collide_field, "../Initial/physics-filed_bc", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, gpu_enabled);
+    printf("END CHK BC \n");
+        // WriteFluidVtkOutput(collide_field, "../Initial/initfluidfiled_bc", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, xd, yd, zd, bcd);
+    printf("Output Vtk for CHK BC \n");
+    WriteAllVtkOutput(collide_field, "./Initial/initallfiled_bc", t, xmax, ymax, zmax, xd, yd, zd);
+    WritePhysics(collide_field, "./Initial/physics-filed_bc", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, gpu_enabled);
+    printf("END output Vtk for CHK BC \n");
 #endif
     mlups_sum = 0.f;
     for (t = 0; t <= timesteps; t++) {
@@ -88,8 +94,9 @@ int main(int argc, char* argv[]) {
         collide_field = stream_field;
         stream_field = swap;
         // /* Treat boundaries */
+        //cout << " Treat boundary t=" << t << endl;
         TreatBoundary(collide_field, bc_velocity, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, bcd, RhoInt);
-       
+
         sw.stop();
         mlups_time = sw.getMs();
         /* Print out the MLUPS value */
@@ -98,7 +105,7 @@ int main(int argc, char* argv[]) {
         // printf("MLUPS: %f\n", num_cells / (MLUPS_EXPONENT * (float)mlups_time));
         /* Print out vtk output if needed */
         if (!(t % timesteps_per_plotting)) {
-            WriteAllVtkOutput(collide_field, "../img/all-fielda", t, xmax, ymax, zmax, xd, yd, zd);
+            WriteAllVtkOutput(collide_field, "./img/all-fielda", t, xmax, ymax, zmax, xd, yd, zd);
            // WriteFluidVtkOutput(collide_field, "../img/fluid-field", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, xd, yd, zd, bcd);
         }
     }
