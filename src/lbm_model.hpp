@@ -24,6 +24,7 @@
 #define INLET 3
 #define OUTLET 4
 #define PERIODIC 5
+#define NEUMANN 6
 #define DUMMY -1
 /* computation enhancing values */
 #define EPS 0.05

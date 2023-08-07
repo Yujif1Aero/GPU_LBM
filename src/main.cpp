@@ -67,6 +67,7 @@ int main(int argc, char* argv[]) {
     WriteAllVtkOutput(collide_field, "./Initial/initallfiled", t, xmax, ymax, zmax, xd, yd, zd);
     WritePhysics(collide_field, "./Initial/physics-filed", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, gpu_enabled);
     writebcd(bcd, "./Initial/init", xmax, ymax, zmax, gpu_enabled);
+  
 
 #ifdef BCINITIAL_CHK
     /* Treat boundaries */
@@ -78,6 +79,7 @@ int main(int argc, char* argv[]) {
     WriteAllVtkOutput(collide_field, "./Initial/initallfiled_bc", t, xmax, ymax, zmax, xd, yd, zd);
     WritePhysics(collide_field, "./Initial/physics-filed_bc", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, gpu_enabled);
     printf("END output Vtk for CHK BC \n");
+    //exit(0);
 #endif
     mlups_sum = 0.f;
     for (t = 0; t <= timesteps; t++) {
