@@ -28,9 +28,7 @@ void write_vtkHeader(FILE* fp, int xrange, int yrange, int zrange) {
     fprintf(fp, "\n");
 }
 
-
 void write_vtkPointCoordinates(FILE* fp, int idomein, vector<double>& xd, vector<double>& yd, vector<double>& zd, vector<int>& bcd) {
-
 
     for (int i = 0; i <= idomein - 1; i++) {
         if (bcd[i] == FLUID)
@@ -40,14 +38,12 @@ void write_vtkPointCoordinates(FILE* fp, int idomein, vector<double>& xd, vector
 
 void write_vtkPointCoordinates(FILE* fp, int idomein, vector<double>& xd, vector<double>& yd, vector<double>& zd) {
 
-
     for (int i = 0; i < idomein; i++) {
         fprintf(fp, "%f %f %f\n", xd[i], yd[i], zd[i]);
     }
 }
 
-
-void WriteAllVtkOutput(const float* const collideField, const char* filename, unsigned int t, int xmax, int ymax, int zmax, vector<double>& xd, vector<double>& yd, vector<double>& zd) {
+void WriteAllVtkOutput(const float* const collideField, const char* filename, unsigned int t, int xmax, int ymax, int zmax, vector<double>& xd, vector<double>& yd, vector<double>& zd, float RhoInt) {
     int x, y, z;
     int idomein = xmax * ymax * zmax;
     float velocity[3], density, pressure;
@@ -107,7 +103,7 @@ void WriteAllVtkOutput(const float* const collideField, const char* filename, un
                 ComputeDensity(
                     &collideField[Q_LBM * (x + y * xmax + z * xmax * ymax)],
                     &density);
-                pressure = density * C_S_POW2;
+                pressure = ComputePressure(RhoInt, density);
                 fprintf(fp, "%f\n", pressure);
             }
         }
@@ -119,11 +115,9 @@ void WriteAllVtkOutput(const float* const collideField, const char* filename, un
     }
 }
 
-
-
-void WriteFluidVtkOutput(const float* const collideField, const char* filename, unsigned int t, const int xstart, const int ystart, const int zstart, const int xend, const int yend, const int zend, const int xmax, const int ymax, const int zmax, vector<double>& xd, vector<double>& yd, vector<double>& zd, vector<int>& bcd) {
+void WriteFluidVtkOutput(const float* const collideField, const char* filename, unsigned int t, const int xstart, const int ystart, const int zstart, const int xend, const int yend, const int zend, const int xmax, const int ymax, const int zmax, vector<double>& xd, vector<double>& yd, vector<double>& zd, vector<int>& bcd, float RhoInt) {
     int x, y, z;
-    
+
     int xrange = xend - xstart + 1;
     int yrange = yend - ystart + 1;
     int zrange = zend - zstart + 1;
@@ -187,7 +181,7 @@ void WriteFluidVtkOutput(const float* const collideField, const char* filename, 
                 ComputeDensity(
                     &collideField[Q_LBM * (x + y * xmax + z * xmax * ymax)],
                     &density);
-                pressure = density * C_S_POW2;
+                pressure = ComputePressure(RhoInt, density);
                 fprintf(fp, "%f\n", pressure);
             }
         }
@@ -250,7 +244,7 @@ void WriteField(const float* const field, const char* filename, unsigned int t,
     }
 }
 
-void WritePhysics(const float* const field, const char* filename, unsigned int t, const int xstart, const int ystart, const int zstart, const int xend, const int yend, const int zend, const int xmax, const int ymax, const int zmax, const int rank) {
+void WritePhysics(const float* const field, const char* filename, unsigned int t, const int xstart, const int ystart, const int zstart, const int xend, const int yend, const int zend, const int xmax, const int ymax, const int zmax, const int rank, float RhoInt) {
     int x, y, z;
     float density, velocity[3], pressure;
 
@@ -277,7 +271,7 @@ void WritePhysics(const float* const field, const char* filename, unsigned int t
                 ComputeVelocity(
                     &field[Q_LBM * (x + y * xmax + z * xmax * ymax)],
                     &density, velocity);
-                pressure = density * C_S_POW2;
+                pressure = ComputePressure(RhoInt, density);
                 fprintf(fp, "%d, %d, %d, %f, %f, %f. %f, %f", x, y, z, velocity[0],
                         velocity[1], velocity[2], density, pressure);
                 fprintf(fp, "\n");

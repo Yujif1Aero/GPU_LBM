@@ -29,7 +29,11 @@ void ComputeVelocity(const float* const current_cell, const float* const density
     velocity[0] /= *density;
     velocity[1] /= *density;
     velocity[2] /= *density;
+}
 
+float ComputePressure(float RhoInt, float density) {
+    float pressure = (density - RhoInt) * C_S_POW2;
+    return pressure;
 }
 
 void ComputeFeq(const float* const density, const float* const velocity, float* feq) {

@@ -3,9 +3,9 @@
 
 
 
-void WriteFluidVtkOutput(const float* const collide_field, const char* filename, unsigned int t, const int xstart, const int ystart, const int zstart, const int xend, const int yend, const int zend, const int xmax, const int ymax, const int zmax, vector<double>& xd, vector<double>& yd, vector<double>& zd, vector<int>& bcd);
+void WriteFluidVtkOutput(const float* const collide_field, const char* filename, unsigned int t, const int xstart, const int ystart, const int zstart, const int xend, const int yend, const int zend, const int xmax, const int ymax, const int zmax, vector<double>& xd, vector<double>& yd, vector<double>& zd, vector<int>& bcd, float RhoInt);
 
-void WriteAllVtkOutput(const float* const collide_field, const char* filename, unsigned int t,  const int xmax, const int ymax, const int zmax, vector<double>& xd, vector<double>& yd, vector<double>& zd);
+void WriteAllVtkOutput(const float* const collide_field, const char* filename, unsigned int t,  const int xmax, const int ymax, const int zmax, vector<double>& xd, vector<double>& yd, vector<double>& zd, float RhoInt);
 /**
  * Writes the provided stream or collision field to a file with specified
  * identifiers.
@@ -20,5 +20,5 @@ void writebcd(vector<int> &bcd, const char *filename, const int xmax, const int 
 
 void PrintField(float* field, int xmax, int ymax, int zmax);
 
-void WritePhysics(const float* const field, const char* filename, unsigned int t, const int xstart, const int ystart, const int zstart, const int xend, const int yend, const int zend, const int xmax, const int ymax, const int zmax, const int rank);
+void WritePhysics(const float* const field, const char* filename, unsigned int t, const int xstart, const int ystart, const int zstart, const int xend, const int yend, const int zend, const int xmax, const int ymax, const int zmax, const int rank, float RhoInt);
 #endif

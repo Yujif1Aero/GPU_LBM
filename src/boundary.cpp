@@ -255,7 +255,7 @@ void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int yst
                 }
 #ifdef SWICH_OUTLETBC_NEUMANN_20230803
                 if (bcd[x + y * xmax + z * xmax * ymax] == NEUMANN) {
-                    //  cout << "NEUMANN OUTLET  x, y, z =" << x << " " << y << " " << z << " " << endl;
+                    //cout << "NEUMANN OUTLET  x, y, z =" << x << " " << y << " " << z << " " << endl;
                     if (x == 0) {
                         nx = 1;
                         nx_b1 = 2;
