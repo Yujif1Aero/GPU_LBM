@@ -22,4 +22,4 @@ timesteps           10000
 #-------------------------------------------------------------------------------
 timesteps_per_plotting  200
 #------------------------------------------------------------------------------
-filegrid  ./mesh/flat_mesh/gridbc_ascii.dat
+filegrid  ../mesh/flat_mesh/gridbc_ascii.dat

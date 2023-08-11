@@ -18,6 +18,19 @@ int inv(int i) {
     return (Q_LBM - 1) - i;
 }
 
+int invTany(int i) {
+    if (i < 5) {
+        return i + 7;
+    } else if (i > 5) {
+        return i - 7;
+    }
+    return -1;
+}
+
+int invTan_bottomy(int i) {
+    return (i - 7);
+}
+
 void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int ystart, int zstart, int xend, int yend, int zend, int xmax, int ymax, int zmax, vector<int>& bcd, float RhoInt) {
 
     float density, pressure, density_b, density_b1, velocity[3], velocity_b[3], velocity_b1[3];
@@ -25,6 +38,7 @@ void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int yst
     float RHS[Q_LBM];
     float work;
     int nx, ny, nz;
+    int nxi, nyi, nzi;
     int nx_b1, ny_b1, nz_b1 = 0;
     int nyperimax, nyperimin;
     for (int z = 0; z < zmax; z++) {
@@ -42,6 +56,19 @@ void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int yst
                             /* bounce back ref Seta Book*/
                             collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * (nx + ny * xmax + nz * xmax * ymax) + i];
                             // collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + i];
+                        } else if (bcd[nx + ny * xmax + nz * xmax * ymax] == SLIP) {
+                            /* Da Silva, Andrey. "Numerical studies of aeroacoustic aspects of wind instruments." (2008). at PP 65 && Springer LBM at PP 207*/
+                            /* slip boundary condition has to be set before setting inlet & outlet conditons because slip boundary cannot be defined at conner.*/
+                            if (i == 6 || i == 2) {
+                                collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * (x + ny * xmax + z * xmax * ymax) + i];
+
+                                // if (i == 1 || i == 0)
+                                //     collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + invTany(i)] = collide_field[Q_LBM * (x + nyi * xmax + z * xmax * ymax) + i];
+                                // if (i == 7 || i == 8)
+                            } else {
+                                collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + invTany(i)] = collide_field[Q_LBM * (x + ny * xmax + z * xmax * ymax) + i];
+                            }
+
                         } else if (bcd[nx + ny * xmax + nz * xmax * ymax] == INLET) {
 
                             /* Dirichlet boundary condition ref book Seta and Springer LBM at PP 180 cs is at PP 92*/
@@ -125,6 +152,7 @@ void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int yst
                             // collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * (nx + ny * xmax + nz * xmax * ymax) + i] - 2.0 * C_S_POW2_INV * density * LATTICE_WEIGHTS[i] * dot_prod;
                             collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + inv(i)] = RHS[i];
 #endif
+
 #ifdef SWICH_OUTLETBC_PRESSUREOUT_20230803_1
                         } else if (bcd[nx + ny * xmax + nz * xmax * ymax] == OUTLET) {
                             /* Dirichlet boundary condition ref book Springer LBM at PP 200*/
@@ -255,7 +283,7 @@ void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int yst
                 }
 #ifdef SWICH_OUTLETBC_NEUMANN_20230803
                 if (bcd[x + y * xmax + z * xmax * ymax] == NEUMANN) {
-                    //cout << "NEUMANN OUTLET  x, y, z =" << x << " " << y << " " << z << " " << endl;
+                    // cout << "NEUMANN OUTLET  x, y, z =" << x << " " << y << " " << z << " " << endl;
                     if (x == 0) {
                         nx = 1;
                         nx_b1 = 2;

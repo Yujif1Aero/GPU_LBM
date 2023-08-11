@@ -22,4 +22,4 @@ timesteps           10000
 #-------------------------------------------------------------------------------
 timesteps_per_plotting  1000
 #------------------------------------------------------------------------------
-filegrid  ./mesh/prism_mesh/gridbcpri_ascii.dat
+filegrid  ../mesh/prism_mesh/gridbcpri_ascii.dat

@@ -64,9 +64,9 @@ int main(int argc, char* argv[]) {
     printf("Initialisation \n");
     InitialiseFields(collide_field, stream_field, xmax, ymax, zmax, gpu_enabled, Feq, RhoInt, VelInt, bcd);
     //WriteFluidVtkOutput(collide_field, "../Initial/initfluidfiled", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, xd, yd, zd, bcd, RhoInt);
-    WriteAllVtkOutput(collide_field, "./Initial/initallfiled", t, xmax, ymax, zmax, xd, yd, zd, RhoInt);
-    WritePhysics(collide_field, "./Initial/physics-filed", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, gpu_enabled, RhoInt);
-    writebcd(bcd, "./Initial/init", xmax, ymax, zmax, gpu_enabled);
+    WriteAllVtkOutput(collide_field, "../Initial/initallfiled", t, xmax, ymax, zmax, xd, yd, zd, RhoInt);
+    WritePhysics(collide_field, "../Initial/physics-filed", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, gpu_enabled, RhoInt);
+    writebcd(bcd, "../Initial/init", xmax, ymax, zmax, gpu_enabled);
   
 
 #ifdef BCINITIAL_CHK
@@ -76,8 +76,8 @@ int main(int argc, char* argv[]) {
     printf("END CHK BC \n");
         // WriteFluidVtkOutput(collide_field, "../Initial/initfluidfiled_bc", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, xd, yd, zd, bcd, RhoInt);
     printf("Output Vtk for CHK BC \n");
-    WriteAllVtkOutput(collide_field, "./Initial/initallfiled_bc", t, xmax, ymax, zmax, xd, yd, zd, RhoInt);
-    WritePhysics(collide_field, "./Initial/physics-filed_bc", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, gpu_enabled, RhoInt);
+    WriteAllVtkOutput(collide_field, "../Initial/initallfiled_bc", t, xmax, ymax, zmax, xd, yd, zd, RhoInt);
+    WritePhysics(collide_field, "../Initial/physics-filed_bc", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, gpu_enabled, RhoInt);
     printf("END output Vtk for CHK BC \n");
     //exit(0);
 #endif
@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
         // printf("MLUPS: %f\n", num_cells / (MLUPS_EXPONENT * (float)mlups_time));
         /* Print out vtk output if needed */
         if (!(t % timesteps_per_plotting)) {
-            WriteAllVtkOutput(collide_field, "./img/all-fielda", t, xmax, ymax, zmax, xd, yd, zd, RhoInt);
+            WriteAllVtkOutput(collide_field, "../img/all-fielda", t, xmax, ymax, zmax, xd, yd, zd, RhoInt);
            // WriteFluidVtkOutput(collide_field, "../img/fluid-field", t, xstart, ystart, zstart, xend, yend, zend, xmax, ymax, zmax, xd, yd, zd, bcd);
         }
     }
