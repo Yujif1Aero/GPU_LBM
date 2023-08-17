@@ -8,6 +8,12 @@
  */
 void ComputeDensity(const float *const current_cell, float *density);
 
+/*
+ * Computes the pressure following “7.2.1.2 Pressure, Stress and Force” in the book of Krüger et al. (https://doi.org/10.1007/978-3-319-44649-3).
+ */
+
+float ComputePressure(float RhoInt, float density);
+
 /**
  * Computes the velocity within currentCell and stores the result in velocity
  */
