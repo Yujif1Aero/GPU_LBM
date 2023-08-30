@@ -11,6 +11,7 @@ using namespace std;
 // #define SWICH_OUTLETBC_PRESSUREOUT_20230803_1
 #define SWICH_OUTLETBC_PRESSUREOUT_20230803_2
 #define SWICH_OUTLETBC_NEUMANN_20230803
+//#define CHK
 /**
  * Finds an inverse probability distribution for the provided lattice index.
  */
@@ -38,7 +39,7 @@ void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int yst
     float RHS[Q_LBM];
     float work;
     int nx, ny, nz;
-    int nxi, nyi, nzi;
+    int nx_invt, ny_invt, nz_invt;
     int nx_b1, ny_b1, nz_b1 = 0;
     int nyperimax, nyperimin;
     for (int z = 0; z < zmax; z++) {
@@ -49,6 +50,12 @@ void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int yst
                         nx = x + int(LATTICE_VELOCITIES[i][0]);
                         ny = y + int(LATTICE_VELOCITIES[i][1]);
                         nz = z + int(LATTICE_VELOCITIES[i][2]);
+                        
+
+                        // below variables are for slip BC
+                        nx_invt = x - int(LATTICE_VELOCITIES[i][0]);
+                        ny_invt = y + int(LATTICE_VELOCITIES[i][1]);
+                        nz_invt = z + int(LATTICE_VELOCITIES[i][2]);
 
                         // cout << "nx, ny and nz are" << nx << "," << ny << "," << nz << endl;
                         if (bcd[nx + ny * xmax + nz * xmax * ymax] == NO_SLIP) {
@@ -56,43 +63,58 @@ void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int yst
                             /* bounce back ref Seta Book*/
                             collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * (nx + ny * xmax + nz * xmax * ymax) + i];
                             // collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + i];
-                        } else if (bcd[nx + ny * xmax + nz * xmax * ymax] == SLIP) {
+                       
+                          } else if (bcd[nx_invt + ny_invt * xmax + nz_invt * xmax * ymax] == SLIP) {
+                          //} else if (bcd[nx + ny * xmax + nz * xmax * ymax] == SLIP) {
                             /* Da Silva, Andrey. "Numerical studies of aeroacoustic aspects of wind instruments." (2008). at PP 65 && Springer LBM at PP 207*/
-                            /* slip boundary condition has to be set before setting inlet & outlet conditons because slip boundary cannot be defined at conner.*/
+                            /* slip boundary condition has to be set before setting inlet & outlet conditions because slip boundary cannot be defined at conner.*/
+                            
                             if (i == 6 || i == 2) {
                                 collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * (x + ny * xmax + z * xmax * ymax) + i];
-
+                                #ifdef CHK
+                                  cout << "i=6,2  "<<"x= " << x << " nx= " << nx  << " y= " << y << " ny= " << ny  << " i= " << i << " inv(i)= " << inv(i) << " " << endl;
+                                #endif
                                 // if (i == 1 || i == 0)
                                 //     collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + invTany(i)] = collide_field[Q_LBM * (x + nyi * xmax + z * xmax * ymax) + i];
                                 // if (i == 7 || i == 8)
-                            } else {
+                            } else if (i == 0 || i == 1 || i == 7 || i == 8)  {
                                 collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + invTany(i)] = collide_field[Q_LBM * (x + ny * xmax + z * xmax * ymax) + i];
+                                #ifdef CHK
+                                 cout << "i=0,1,7,8  "<<"x= " << x << " nx= " << nx <<  " y= " << y << " ny= " << ny  << " i= " << i << " invTany(i)= " << invTany(i) << " " << endl;
+                                 #endif
+                             
                             }
-
-                        } else if (bcd[nx + ny * xmax + nz * xmax * ymax] == INLET) {
-
+                               
+                          }
+                        //} else if (bcd[nx + ny * xmax + nz * xmax * ymax] == INLET) {
+                        if (bcd[nx + ny * xmax + nz * xmax * ymax] == INLET) {
                             /* Dirichlet boundary condition ref book Seta and Springer LBM at PP 180 cs is at PP 92*/
                             dot_prod = LATTICE_VELOCITIES[i][0] * velocity_bc[0] + LATTICE_VELOCITIES[i][1] * velocity_bc[1] + LATTICE_VELOCITIES[i][2] * velocity_bc[2];
 
                             ComputeDensity(&collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax)], &density);
                             // density = RhoInt;
-
+                            #ifdef CHK
+                                 cout << "inlet  "<<"x= " << x << " nx= " << nx <<  " y= " << y << " ny= " << ny  << " i= " << i << " inv(i)= " << inv(i) << " " << endl;
+                            #endif
                             collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax) + inv(i)] = collide_field[Q_LBM * (nx + ny * xmax + nz * xmax * ymax) + i] - 2.0 * C_S_POW2_INV * density * LATTICE_WEIGHTS[i] * dot_prod;
+                            }
 #ifdef SWICH_OUTLETBC_PRESSUREOUT_20230803_2
-                        } else if (bcd[nx + ny * xmax + nz * xmax * ymax] == OUTLET) {
-
+                        if (bcd[nx + ny * xmax + nz * xmax * ymax] == OUTLET) {
                             nx_b1 = x - int(LATTICE_VELOCITIES[i][0]);
                             ny_b1 = y - int(LATTICE_VELOCITIES[i][1]);
                             nz_b1 = z - int(LATTICE_VELOCITIES[i][2]);
                             // if (i == 8) {
                             //     cout << "nx_b1, ny_b1, nz_b1 = " << nx_b1 << " " << ny_b1 << " " << nz_b1 << " " << endl;
                             // }
-                            if ((nx == xmax - 1 && ny != ymax - 1) || (nx == xmax - 1 && ny != 0) || (nx == 0 && ny != ymax - 1) || (nx == 0 && ny != 0)) {
+                            if ((nx == xmax - 1 && ny != ymax - 1 && ny != 0)  || (nx == 0 && ny != ymax - 1 && ny !=0) ) {
                                 // if (nx == xmax - 1 || nx == 0) {
                                 ComputeDensity(&collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax)], &density_b);
                                 ComputeVelocity(&collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax)], &density_b, velocity_b);
                                 ComputeDensity(&collide_field[Q_LBM * (nx_b1 + y * xmax + z * xmax * ymax)], &density_b1);
                                 ComputeVelocity(&collide_field[Q_LBM * (nx_b1 + y * xmax + z * xmax * ymax)], &density_b1, velocity_b1);
+                                #ifdef CHK
+                                cout << "1st "<<"x= " << x << " nx= " << nx << " nx_b1= " << nx_b1 << " y= " << y << " ny= " << ny << " ny_b1= " << ny_b1 << " i= " << i << " inv(i)= " << inv(i) << " " << endl;
+                                #endif
                                 for (int j = 0; j < 3; j++) {
                                     velocity[j] = velocity_b[j] + 0.5 * (velocity_b[j] - velocity_b1[j]);
                                 }
@@ -100,12 +122,15 @@ void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int yst
                                 // work = velocity_bc[0] * velocity_bc[0] + velocity_bc[1] * velocity_bc[1] + velocity_bc[2] * velocity_bc[2];
                                 // pressure = RhoInt * C_S_POW2 + 0.5 * RhoInt * work;
                                 // density = pressure * C_S_POW2_INV;
-                            } else if ((ny == ymax - 1 && nx != xmax - 1) || (ny == ymax - 1 && nx != 0) || (ny == 0 && nx != xmax - 1) || (ny == 0 && nx != 0)) {
+                            } else if ((ny == ymax - 1 && nx != xmax - 1 && nx !=0)  || (ny == 0 && nx != xmax - 1 && nx != 0) ) {
                                 //  } else if (ny == ymax - 1 || ny == 0) {
                                 ComputeDensity(&collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax)], &density_b);
                                 ComputeVelocity(&collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax)], &density_b, velocity_b);
                                 ComputeDensity(&collide_field[Q_LBM * (x + ny_b1 * xmax + z * xmax * ymax)], &density_b1);
                                 ComputeVelocity(&collide_field[Q_LBM * (x + ny_b1 * xmax + z * xmax * ymax)], &density_b1, velocity_b1);
+                                #ifdef CHK
+                                cout <<" 2nd "<< "x= " << x << " nx= " << nx << " nx_b1= " << nx_b1 << " y= " << y << " ny= " << ny << " ny_b1= " << ny_b1 << " i= " << i << " inv(i)= " << inv(i) << " " << endl;
+                                #endif
                                 for (int j = 0; j < 3; j++) {
                                     velocity[j] = velocity_b[j] + 0.5 * (velocity_b[j] - velocity_b1[j]);
                                 }
@@ -120,6 +145,9 @@ void TreatBoundary(float* collide_field, float* velocity_bc, int xstart, int yst
                                 ComputeVelocity(&collide_field[Q_LBM * (x + y * xmax + z * xmax * ymax)], &density_b, velocity_b);
                                 ComputeDensity(&collide_field[Q_LBM * (nx_b1 + ny_b1 * xmax + z * xmax * ymax)], &density_b1);
                                 ComputeVelocity(&collide_field[Q_LBM * (nx_b1 + ny_b1 * xmax + z * xmax * ymax)], &density_b1, velocity_b1);
+                                #ifdef CHK
+                                cout <<" conner "<< "x= " << x << " nx= " << nx << " nx_b1= " << nx_b1 << " y= " << y << " ny= " << ny << " ny_b1= " << ny_b1 << " i= " << i << " inv(i)= " << inv(i)  << endl;
+                                #endif
                                 for (int j = 0; j < 3; j++) {
                                     velocity[j] = velocity_b[j] + 0.5 * (velocity_b[j] - velocity_b1[j]);
                                     // velocity[j] = velocity_b[j];
